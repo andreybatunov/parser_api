@@ -1,4 +1,5 @@
-from fastapi import FastAPI, WebSocket
+from fastapi import FastAPI, WebSocket, HTTPException
+from typing import Union
 import uvicorn
 
 from services import ParserService
@@ -24,13 +25,33 @@ class App:
         self.app.get("/data/", response_model=list[DataSchemaOut])(
             self.handlers.get_all_data
         )
-        self.app.get("/data/{item_id}", response_model=DataSchemaOut)(
-            self.handlers.get_data
-        )
-        self.app.put("/data/{item_id}", response_model=DataSchemaOut)(
-            self.handlers.update_data
-        )
-        self.app.delete("/data/{item_id}")(self.handlers.delete_data)
+        self.app.get(
+            "/data/{item_id}",
+            responses={
+                200: {"model": DataSchemaOut},
+                404: {"description": "Данные не найдены"}
+            }
+        )(self.handlers.get_data)
+        self.app.put(
+            "/data/{item_id}",
+            responses={
+                200: {"model": DataSchemaOut},
+                404: {"description": "Данные не найдены"}
+            }
+        )(self.handlers.update_data)
+        self.app.delete(
+            "/data/{item_id}",
+            responses={
+                200: {"description": "Данные успешно удалены"},
+                404: {"description": "Данные не найдены"}
+            }
+        )(self.handlers.delete_data)
+        self.app.post(
+            "/data/",
+            responses={
+                200: {"description": "Данные успешно созданы"}
+            }
+        )(self.handlers.create_data)
         self.app.add_event_handler("startup", self.handlers.startup)
         self.app.websocket("/ws")(self.websocket_endpoint)
 

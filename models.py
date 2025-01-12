@@ -8,7 +8,6 @@ SQLALCHEMY_DATABASE_URL = "sqlite:///./parsed_data.db"
 
 Base = declarative_base()
 
-
 class ParsedData(Base):
     __tablename__ = "parsed_data"
 

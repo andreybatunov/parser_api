@@ -86,8 +86,6 @@ class ParserService:
 
                 all_products.append({"name": name, "price": price})
 
-            print(f"Собрано товаров: {len(all_products)}")
-
             if self.PAGES:
                 self.URL = self.SHORT_URL + pages[page - 1]["href"]
                 page += 1
@@ -135,6 +133,12 @@ class ParserService:
         if not item:
             raise HTTPException(status_code=404, detail="Данные не найдены")
         return DataSchemaOut(**item.__dict__)
+
+    def create_data(self, data: DataSchemaIn):
+        db_item = ParsedData(**data.model_dump())
+        self.db.add(db_item)
+        self.db.commit()
+        self.db.close()
 
     def update_data(self, item_id: int, data: DataSchemaIn):
         item = self.db.query(ParsedData).filter(ParsedData.id == item_id).first()
